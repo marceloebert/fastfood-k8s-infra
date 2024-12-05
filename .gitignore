@@ -31,3 +31,4 @@ out/
 
 # Ignorar Terraform
 .terraform/
+eks-fastfood/.terraform/
