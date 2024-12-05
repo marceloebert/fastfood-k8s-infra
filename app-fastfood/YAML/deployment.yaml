@@ -54,8 +54,21 @@ spec:
                   name: db-config
                   key: SPRING_JPA_DATABASE_PLATFORM           
         
-          livenessProbe: null         
-          readinessProbe: null            
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            periodSeconds: 10
+            failureThreshold: 3
+            initialDelaySeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            periodSeconds: 10
+            failureThreshold: 5
+            initialDelaySeconds: 3
+
           resources:
             requests:
               memory: "512Mi"  # Memória garantida para cada pod
