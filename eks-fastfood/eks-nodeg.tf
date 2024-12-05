@@ -7,7 +7,7 @@ resource "aws_eks_node_group" "node-group" {
   instance_types   = [var.instanceType]
 
   scaling_config {
-    desired_size = 2
+    desired_size = 3
     max_size     = 5
     min_size     = 1
   }
