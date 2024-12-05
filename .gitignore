@@ -32,3 +32,5 @@ out/
 # Ignorar Terraform
 .terraform/
 eks-fastfood/.terraform/
+app-fastfood/.terraform/
+

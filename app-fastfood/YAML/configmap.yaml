@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-config
+  namespace: default
+  labels:
+    name: db-config
+data:
+  MYSQL_URL: jdbc:mysql://terraform-20241130210826954600000001.cnnroptqg5tu.us-east-1.rds.amazonaws.com:3306/lanchonetedb
+  MYSQL_USERNAME: sa
+  MYSQL_PASSWORD: password123
+  SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+  SPRING_JPA_HIBERNATE_DDL_AUTO: update
+  SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQL8Dialect
+  ECR_API: 731841272399.dkr.ecr.us-east-1.amazonaws.com/fiap-software-architecture-fastfood:latest
