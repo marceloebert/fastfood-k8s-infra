@@ -35,15 +35,27 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.REGION_DEFAULT }}
 
-      - name: Terraform Init
+      - name: Terraform Init - Infra k8s
         working-directory: eks-fastfood
         run: terraform init
 
-      - name: Terraform Plan
+      - name: Terraform Plan - Infra k8s
         working-directory: eks-fastfood
         run: terraform plan -out=tfplan
 
-      - name: Terraform Apply
+      - name: Terraform Apply - Infra k8s
         working-directory: eks-fastfood
+        run: terraform apply -auto-approve tfplan
+
+      - name: Terraform Init - App
+        working-directory: app-fastfood
+        run: terraform init
+
+      - name: Terraform Plan - App
+        working-directory: app-fastfood
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply - App
+        working-directory: app-fastfood
         run: terraform apply -auto-approve tfplan
           
