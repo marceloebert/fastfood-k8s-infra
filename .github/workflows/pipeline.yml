@@ -10,9 +10,13 @@ env:
   CLUSTER_NAME: EKS-fastfood
 
 jobs:
-  deploy:
+
+ deploy:
     name: Deploying Infra k8s
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest    
+    
+    environment: #Define a configuração de ambiente para este job
+      name: AWS       
 
     steps:
       - name: Checkout
