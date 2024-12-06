@@ -1,16 +1,17 @@
 resource "aws_ecr_repository" "app_fastfood" {
-  name                 = "fiap-software-architecture-fastfood" 
+  name = "fiap-software-architecture-fastfood"
+
   force_delete = true
-  image_tag_mutability = "MUTABLE"     
+  image_tag_mutability = "MUTABLE"
   image_scanning_configuration {
-    scan_on_push = true               
+    scan_on_push = true
   }
 
-  tags = {    
+  tags = {
     Application = "Fastfood"
   }
-  
+
   lifecycle {
-    ignore_changes = [name]
+    prevent_destroy = true
   }
 }
