@@ -35,7 +35,14 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.REGION_DEFAULT }}
 
-      # Terraform para Infra K8s
+      # Criar o bucket S3 para o backend do EKS
+      - name: Create S3 Bucket for EKS Backend
+        working-directory: eks-fastfood
+        run: |
+          terraform init -backend=false
+          terraform apply -auto-approve
+
+      # Inicializar o backend do EKS após criar o bucket
       - name: Terraform Init - Infra k8s
         working-directory: eks-fastfood
         run: terraform init
@@ -48,7 +55,7 @@ jobs:
         working-directory: eks-fastfood
         run: terraform apply -auto-approve tfplan
 
-      # Espera o Cluster estar disponível
+      # Esperar o cluster estar ativo
       - name: Wait for EKS Cluster to be available
         run: |
           echo "Waiting for EKS cluster to be ACTIVE..."
@@ -64,7 +71,14 @@ jobs:
             fi
           done
 
-      # Terraform para o App
+      # Criar o bucket S3 para o backend do App
+      - name: Create S3 Bucket for App Backend
+        working-directory: app-fastfood
+        run: |
+          terraform init -backend=false
+          terraform apply -auto-approve
+
+      # Inicializar o backend do App após criar o bucket
       - name: Terraform Init - App
         working-directory: app-fastfood
         run: terraform init
