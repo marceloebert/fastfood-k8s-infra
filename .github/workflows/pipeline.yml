@@ -11,11 +11,11 @@ env:
 
 jobs:
 
- deploy:
-    name: Deploying Infra k8s
-    runs-on: ubuntu-latest    
-    
-    environment: #Define a configuração de ambiente para este job
+  deploy:
+    name: Deploying Infra k8s and App
+    runs-on: ubuntu-latest
+
+    environment: # Define a configuração de ambiente para este job
       name: AWS       
 
     steps:
@@ -35,9 +35,56 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.REGION_DEFAULT }}
 
+      # Passo de Configuração de Permissões
+      - name: Configure S3 Permissions
+        run: |
+          mkdir -p iam-setup
+          echo '
+          resource "aws_iam_policy" "allow_s3_bucket_operations" {
+            name        = "AllowS3BucketOperations"
+            description = "Policy to allow S3 bucket creation and management"
+            policy = jsonencode({
+              Version = "2012-10-17",
+              Statement = [
+                {
+                  Effect   = "Allow",
+                  Action   = [
+                    "s3:CreateBucket",
+                    "s3:PutBucketVersioning",
+                    "s3:PutBucketTagging",
+                    "s3:PutBucketPolicy",
+                    "s3:GetBucketLocation",
+                    "s3:ListBucket"
+                  ],
+                  Resource = "arn:aws:s3:::*"
+                }
+              ]
+            })
+          }
+          resource "aws_iam_role_policy_attachment" "attach_policy_to_role" {
+            role       = "voclabs" # Substitua pelo nome da sua role
+            policy_arn = aws_iam_policy.allow_s3_bucket_operations.arn
+          }
+          ' > iam-setup/iam.tf
+          cd iam-setup
+          terraform init
+          terraform apply -auto-approve
+          cd ..
+
+      # Criar Bucket para Backend do EKS
+      - name: Create S3 Bucket for EKS Backend
+        run: |
+          mkdir -p temp-eks
+          cp eks-fastfood/s3.tf temp-eks/
+          cd temp-eks
+          terraform init
+          terraform apply -auto-approve
+          cd ..
+
+      # Inicializar o backend do EKS após criar o bucket
       - name: Terraform Init - Infra k8s
         working-directory: eks-fastfood
-        run: terraform init
+        run: terraform init -reconfigure
 
       - name: Terraform Plan - Infra k8s
         working-directory: eks-fastfood
@@ -47,9 +94,36 @@ jobs:
         working-directory: eks-fastfood
         run: terraform apply -auto-approve tfplan
 
+      # Esperar o cluster EKS estar ativo
+      - name: Wait for EKS Cluster to be available
+        run: |
+          echo "Waiting for EKS cluster to be ACTIVE..."
+          while true; do
+            STATUS=$(aws eks describe-cluster --name ${{ env.CLUSTER_NAME }} --query 'cluster.status' --output text)
+            echo "Cluster status: $STATUS"
+            if [ "$STATUS" == "ACTIVE" ]; then
+              echo "Cluster is ACTIVE. Proceeding..."
+              break
+            else
+              echo "Cluster not ready. Waiting 30 seconds..."
+              sleep 30
+            fi
+          done
+
+      # Criar Bucket para Backend do App
+      - name: Create S3 Bucket for App Backend
+        run: |
+          mkdir -p temp-app
+          cp app-fastfood/s3.tf temp-app/
+          cd temp-app
+          terraform init
+          terraform apply -auto-approve
+          cd ..
+
+      # Inicializar o backend do App após criar o bucket
       - name: Terraform Init - App
         working-directory: app-fastfood
-        run: terraform init
+        run: terraform init -reconfigure
 
       - name: Terraform Plan - App
         working-directory: app-fastfood
@@ -58,4 +132,3 @@ jobs:
       - name: Terraform Apply - App
         working-directory: app-fastfood
         run: terraform apply -auto-approve tfplan
-          
