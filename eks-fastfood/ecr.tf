@@ -9,4 +9,8 @@ resource "aws_ecr_repository" "app_fastfood" {
   tags = {    
     Application = "Fastfood"
   }
+  
+  lifecycle {
+    ignore_changes = [name]
+  }
 }
