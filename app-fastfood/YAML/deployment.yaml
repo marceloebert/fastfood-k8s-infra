@@ -76,7 +76,7 @@ spec:
             limits:
               memory: "1Gi"    # Memória máxima que a pod pode consumir
               cpu: "500m"      # CPU máxima que a pod pode consumir
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: api-pod
