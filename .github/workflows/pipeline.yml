@@ -35,10 +35,16 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.REGION_DEFAULT }}
 
-      # Inicializar o backend do EKS após criar o bucket
+      # Restaurar o estado do Terraform - Infra k8s
+      - name: Restore Terraform State - Infra k8s
+        uses: actions/download-artifact@v3
+        with:
+          name: terraform-state-eks-fastfood
+          path: eks-fastfood/
+
       - name: Terraform Init - Infra k8s
         working-directory: eks-fastfood
-        run: terraform init -reconfigure
+        run: terraform init -backend=false
 
       - name: Terraform Plan - Infra k8s
         working-directory: eks-fastfood
@@ -47,6 +53,13 @@ jobs:
       - name: Terraform Apply - Infra k8s
         working-directory: eks-fastfood
         run: terraform apply -auto-approve tfplan
+
+      # Salvar o estado do Terraform - Infra k8s
+      - name: Save Terraform State - Infra k8s
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform-state-eks-fastfood
+          path: eks-fastfood/terraform.tfstate
 
       # Esperar o cluster EKS estar ativo
       - name: Wait for EKS Cluster to be available
@@ -62,12 +75,18 @@ jobs:
               echo "Cluster not ready. Waiting 30 seconds..."
               sleep 30
             fi
-          done   
+          done
 
-      # Inicializar o backend do App após criar o bucket
+      # Restaurar o estado do Terraform - App
+      - name: Restore Terraform State - App
+        uses: actions/download-artifact@v3
+        with:
+          name: terraform-state-app-fastfood
+          path: app-fastfood/
+
       - name: Terraform Init - App
         working-directory: app-fastfood
-        run: terraform init -reconfigure
+        run: terraform init -backend=false
 
       - name: Terraform Plan - App
         working-directory: app-fastfood
@@ -76,3 +95,10 @@ jobs:
       - name: Terraform Apply - App
         working-directory: app-fastfood
         run: terraform apply -auto-approve tfplan
+
+      # Salvar o estado do Terraform - App
+      - name: Save Terraform State - App
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform-state-app-fastfood
+          path: app-fastfood/terraform.tfstate
