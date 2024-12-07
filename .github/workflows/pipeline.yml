@@ -41,6 +41,7 @@ jobs:
         with:
           name: terraform-state-eks-fastfood
           path: eks-fastfood/
+        continue-on-error: true # Continua mesmo se não encontrar o artefato
 
       - name: Terraform Init - Infra k8s
         working-directory: eks-fastfood
@@ -60,6 +61,7 @@ jobs:
         with:
           name: terraform-state-eks-fastfood
           path: eks-fastfood/terraform.tfstate
+        continue-on-error: false # Garantir que o artefato seja salvo
 
       # Esperar o cluster EKS estar ativo
       - name: Wait for EKS Cluster to be available
@@ -83,6 +85,7 @@ jobs:
         with:
           name: terraform-state-app-fastfood
           path: app-fastfood/
+        continue-on-error: true # Continua mesmo se não encontrar o artefato
 
       - name: Terraform Init - App
         working-directory: app-fastfood
@@ -102,3 +105,4 @@ jobs:
         with:
           name: terraform-state-app-fastfood
           path: app-fastfood/terraform.tfstate
+        continue-on-error: false # Garantir que o artefato seja salvo
