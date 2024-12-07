@@ -10,13 +10,9 @@ env:
   CLUSTER_NAME: EKS-fastfood
 
 jobs:
-
   deploy:
     name: Deploying Infra k8s and App
     runs-on: ubuntu-latest
-
-    environment: # Define a configuração de ambiente para este job
-      name: AWS       
 
     steps:
       - name: Checkout
@@ -35,15 +31,7 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.REGION_DEFAULT }}
 
-      # Restaurar o estado do Terraform - Infra k8s
-      - name: Restore Terraform State - Infra k8s
-        run: |
-          if [ -f eks-fastfood/terraform.tfstate ]; then
-            echo "Terraform state already exists for Infra k8s. No action needed."
-          else
-            echo "No existing terraform state for Infra k8s. Starting fresh."
-          fi
-
+      # Inicializar o backend e aplicar a infraestrutura de EKS
       - name: Terraform Init - Infra k8s
         working-directory: eks-fastfood
         run: terraform init -reconfigure
@@ -56,13 +44,11 @@ jobs:
         working-directory: eks-fastfood
         run: terraform apply -auto-approve tfplan
 
-      # Salvar o estado do Terraform - Infra k8s
-      - name: Save Terraform State - Infra k8s
+      # Configurar kubectl para acessar o cluster EKS
+      - name: Configure kubectl
         run: |
-          echo "Saving terraform state for Infra k8s..."
-          if [ -f eks-fastfood/terraform.tfstate ]; then
-            echo "State file already exists at the expected location. No action needed."
-          fi
+          aws eks update-kubeconfig --region ${{ env.REGION_DEFAULT }} --name ${{ env.CLUSTER_NAME }}
+          kubectl get nodes # Testar conexão com o cluster
 
       # Esperar o cluster EKS estar ativo
       - name: Wait for EKS Cluster to be available
@@ -80,15 +66,7 @@ jobs:
             fi
           done
 
-      # Restaurar o estado do Terraform - App
-      - name: Restore Terraform State - App
-        run: |
-          if [ -f app-fastfood/terraform.tfstate ]; then
-            echo "Terraform state already exists for App. No action needed."
-          else
-            echo "No existing terraform state for App. Starting fresh."
-          fi
-
+      # Inicializar e aplicar o Terraform para o App
       - name: Terraform Init - App
         working-directory: app-fastfood
         run: terraform init -reconfigure
@@ -100,11 +78,3 @@ jobs:
       - name: Terraform Apply - App
         working-directory: app-fastfood
         run: terraform apply -auto-approve tfplan
-
-      # Salvar o estado do Terraform - App
-      - name: Save Terraform State - App
-        run: |
-          echo "Saving terraform state for App..."
-          if [ -f app-fastfood/terraform.tfstate ]; then
-            echo "State file already exists at the expected location. No action needed."
-          fi
