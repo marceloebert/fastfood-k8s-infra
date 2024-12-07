@@ -38,10 +38,8 @@ jobs:
       # Restaurar o estado do Terraform - Infra k8s
       - name: Restore Terraform State - Infra k8s
         run: |
-          echo "Checking for existing state file for Infra k8s..."
-          if [ -f $GITHUB_WORKSPACE/eks-fastfood/terraform.tfstate ]; then
-            echo "Restoring terraform state for Infra k8s..."
-            cp $GITHUB_WORKSPACE/eks-fastfood/terraform.tfstate eks-fastfood/terraform.tfstate
+          if [ -f eks-fastfood/terraform.tfstate ]; then
+            echo "Terraform state already exists for Infra k8s. No action needed."
           else
             echo "No existing terraform state for Infra k8s. Starting fresh."
           fi
@@ -62,7 +60,9 @@ jobs:
       - name: Save Terraform State - Infra k8s
         run: |
           echo "Saving terraform state for Infra k8s..."
-          cp eks-fastfood/terraform.tfstate $GITHUB_WORKSPACE/eks-fastfood/terraform.tfstate
+          if [ -f eks-fastfood/terraform.tfstate ]; then
+            echo "State file already exists at the expected location. No action needed."
+          fi
 
       # Esperar o cluster EKS estar ativo
       - name: Wait for EKS Cluster to be available
@@ -83,10 +83,8 @@ jobs:
       # Restaurar o estado do Terraform - App
       - name: Restore Terraform State - App
         run: |
-          echo "Checking for existing state file for App..."
-          if [ -f $GITHUB_WORKSPACE/app-fastfood/terraform.tfstate ]; then
-            echo "Restoring terraform state for App..."
-            cp $GITHUB_WORKSPACE/app-fastfood/terraform.tfstate app-fastfood/terraform.tfstate
+          if [ -f app-fastfood/terraform.tfstate ]; then
+            echo "Terraform state already exists for App. No action needed."
           else
             echo "No existing terraform state for App. Starting fresh."
           fi
@@ -107,4 +105,6 @@ jobs:
       - name: Save Terraform State - App
         run: |
           echo "Saving terraform state for App..."
-          cp app-fastfood/terraform.tfstate $GITHUB_WORKSPACE/app-fastfood/terraform.tfstate
+          if [ -f app-fastfood/terraform.tfstate ]; then
+            echo "State file already exists at the expected location. No action needed."
+          fi
