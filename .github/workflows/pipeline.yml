@@ -38,16 +38,15 @@ jobs:
       # Restaurar o estado do Terraform - Infra k8s
       - name: Restore Terraform State - Infra k8s
         run: |
-          if [ -f $GITHUB_WORKSPACE/eks-fastfood/terraform.tfstate ]; then
-            echo "Restoring terraform state for Infra k8s..."
-            cp $GITHUB_WORKSPACE/eks-fastfood/terraform.tfstate eks-fastfood/terraform.tfstate
+          if [ -f eks-fastfood/terraform.tfstate ]; then
+            echo "Terraform state already exists for Infra k8s. No action needed."
           else
             echo "No existing terraform state for Infra k8s. Starting fresh."
           fi
 
       - name: Terraform Init - Infra k8s
         working-directory: eks-fastfood
-        run: terraform init -backend=false
+        run: terraform init -backend=false -reconfigure
 
       - name: Terraform Plan - Infra k8s
         working-directory: eks-fastfood
@@ -82,16 +81,15 @@ jobs:
       # Restaurar o estado do Terraform - App
       - name: Restore Terraform State - App
         run: |
-          if [ -f $GITHUB_WORKSPACE/app-fastfood/terraform.tfstate ]; then
-            echo "Restoring terraform state for App..."
-            cp $GITHUB_WORKSPACE/app-fastfood/terraform.tfstate app-fastfood/terraform.tfstate
+          if [ -f app-fastfood/terraform.tfstate ]; then
+            echo "Terraform state already exists for App. No action needed."
           else
             echo "No existing terraform state for App. Starting fresh."
           fi
 
       - name: Terraform Init - App
         working-directory: app-fastfood
-        run: terraform init -backend=false
+        run: terraform init -backend=false -reconfigure
 
       - name: Terraform Plan - App
         working-directory: app-fastfood
