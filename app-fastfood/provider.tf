@@ -1,6 +1,8 @@
 terraform {
-  backend "local" {
-    path = "terraform.tfstate"
+  backend "s3" {
+    bucket = "app-fastfood-terraform-state"
+    key    = "terraform.tfstate"
+    region = "us-east-1"
   }
 }
 provider "aws" {
